@@ -1,10 +1,17 @@
 using Distributions
-struct Dense
-    number_of_features::Int64
-    layer_size::Int64
-    weights::Matrix{Float64}
+using Parameters
+
+
+@with_kw struct Dense
+    weights = 0
+    bias = 0
 end
 
-function initialize_dense_layer(layer, number_of_features, number_of_neurons)
-
+function Dense(number_of_features::Int, layer_size::Int)
+    distribution = Normal()
+    weights = 1e-2 * rand(distribution, number_of_features, layer_size)
+    bias = zeros(layer_size, 1)
+    Dense(weights, bias)
 end
+
+Dense(10, 10)
