@@ -21,6 +21,7 @@ function relu!(input)
     for idx in negative_elements_idx
         input[idx[1]] = 0
     end
+    return input
 end
 
 function forward!(layer, inputs)
@@ -33,6 +34,6 @@ layer = Dense(10, 10)
 distribution = Normal()
 input = 1e-2 * rand(distribution, 10, 1)
 forward!(layer, input)
-layer.output
+print(layer.output)
 
 
