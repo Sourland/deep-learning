@@ -1,7 +1,10 @@
 ##
 using Distributions
 using Parameters
+using BenchmarkTools
+using Dates
 include("./utility_functions.jl")
+include("./data.jl")
 ##
 
 ##
@@ -17,25 +20,25 @@ function Dense(number_of_features::Int, layer_size::Int, activation::Function)
     distribution = Normal()
     weights = 1e-2 * rand(distribution, number_of_features, layer_size)
     bias = zeros(layer_size, 1)
-
     Dense(weights, bias, undef, x->activation(x))
 end
 
-#
-function forward(layer, inputs)
-    result = transpose(layer.weights) * inputs + layer.bias
-    layer.activation(result)
-    print("raccoooooooon")
+function (d::Dense)(input)
+    result = transpose(d.weights) * input .+ d.bias
+    d.activation(result)
     return result
 end
-##
 
-##
-layer1 = Dense(10, 20, relu!)
-layer2 = Dense(20, 10, softmax!)
+layer1 = Dense(1024, 512, ReLU!)
+layer2 = Dense(512, 256, ReLU!)
+layer3 = Dense(256, 10, softmax!)
 distribution = Normal()
-input = 1e-2 * rand(distribution, 10, 1)
-layer1.output = forward(layer1, input)
-layer2.output = forward(layer2, layer1.output)
+# input = 1e-2 * rand(distribution, 10, 1)
+input = x_test[:,1:256]
+@time begin
+output1 = layer1(input)
+output2 = layer2(output1)
+output3 = layer3(output2)
+end
 ##
 
