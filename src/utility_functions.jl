@@ -1,15 +1,21 @@
 
 e = MathConstants.e
-function relu!(x)
+function ReLU!(x)
     @. x[x < 0] = 0
+end
+
+function ∇ReLU!(x)
+    return x.>0disc
 end
 
 function softmax!(x)
     exp_values = e .^ x
-    x = exp_values / sum(exp_values, dims = 1)
+    output = exp_values ./ sum(exp_values, dims = 1)
+    x[:] = output
 end
 
-function categorical_cross_entropy(y_pred, y_true)
-    confidence = sum(y_pred * y_true, dims=1)
+function categorical_cross_entropy(ŷ, y)
+    product = ŷ .* y
+    confidence = sum(product, dims = 1)
     return -log.(confidence)
 end
