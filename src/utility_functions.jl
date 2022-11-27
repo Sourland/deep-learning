@@ -5,7 +5,7 @@ function ReLU!(x)
 end
 
 function ∇ReLU!(x)
-    return x.>0disc
+    return x.>0
 end
 
 function softmax!(x)
