@@ -2,7 +2,6 @@
 using Distributions
 using Parameters
 include("./utility_functions.jl")
-include("./data.jl")
 ##
 
 ##
@@ -29,7 +28,3 @@ function (layer::Dense)(input)
     layer.activation(result)
     return result
 end
-
-layer1 = Dense("l1", 28*28, 256, ReLU!)
-layer2 = Dense("l2",256, 128, ReLU!)
-layer3 = Dense("l3",128, 10, softmax!)

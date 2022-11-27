@@ -2,7 +2,7 @@ using BenchmarkTools
 using Dates
 using Random
 using Octavian
-include("src/dense_layer.jl")
+include("dense_layer.jl")
 
 
 function forward(layers, input)
@@ -51,13 +51,9 @@ function update_parameters(layers, ∂𝗪, ∂𝗯, 𝞰)
     return layers
 end
 
-
 function predict(y)
     return map(argmax, eachcol(y))
 end
-
-layers = [layer1 layer2 layer3]
-
 
 function one_hot_encoding( number_of_classes, labels)
     encoded_labels = zeros(number_of_classes, size(labels)[1])
@@ -67,47 +63,72 @@ function one_hot_encoding( number_of_classes, labels)
     return encoded_labels
 end
 
-function train(layers, x_train, y_train, epochs, batch_size)
+function train(layers, x_train, y_train, epochs, batch_size, learning_rate)
     evaluation_samples = randperm(size(x_train)[2])
-    evaluation_idx = evaluation_samples[1:convert(Int, floor(0.4*size(x_train)[2]))]
+    evaluation_idx = evaluation_samples[1:convert(Int, floor(0.2*size(x_train)[2]))]
     x_val = x_train[:,evaluation_idx]
     y_val = y_train[evaluation_idx]
 
     x_train = x_train[:,setdiff(1:end, Tuple(evaluation_idx))]
     y_train = y_train[setdiff(1:end, Tuple(evaluation_idx))]
+    
+    current_idx = 0;
+    current_output = 0;
 
     y_train_encoded = one_hot_encoding(maximum(y_train)+1, y_train)
+    y_val_encoded = one_hot_encoding(maximum(y_val)+1, y_val)
+    metrics = Dict("loss" => [], "accuracy" => [], "val_loss" => [], "val_accuracy" => [])
+
     for e in 1:epochs
         @time begin
         samples = randperm(size(x_train)[2]) 
-        for i in 0:convert(Int, floor(size(x_train)[2]/batch_size))-1
-            if (i*batch_size + batch_size+ 1) < size(x_train)[2]
-                currext_idx = samples[i*batch_size + 1:i*batch_size + batch_size]
+        for i in 0:convert(Int, floor(size(x_train)[2]/batch_size))-2
+            if (i*batch_size + batch_size) < size(x_train)[2]
+                current_idx = samples[i*batch_size + 1:i*batch_size + batch_size]
             else
-                currext_idx = samples[i*batch_size + 1:end]
+                current_idx = samples[i*batch_size + 1:end]
             end
-            layers, outputs, current_output = forward(layers, x_train[:,currext_idx])
-            ∂𝗪, ∂𝗯 = calculate_gradients(layers, x_train[:,currext_idx], 
+            
+            layers, outputs, current_output = forward(layers, x_train[:,current_idx])
+            ∂𝗪, ∂𝗯 = calculate_gradients(layers, x_train[:,current_idx], 
                                         outputs, 
-                                        y_train_encoded[:,currext_idx], 
+                                        y_train_encoded[:,current_idx], 
                                         current_output)
-            layers = update_parameters(layers, ∂𝗪, ∂𝗯, 0.01)
-            # val_accuracy = test(layers, x_val, y_val)
-        end
-        println("Epoch " * string(e))
+            layers = update_parameters(layers, ∂𝗪, ∂𝗯, learning_rate)
 
-    end
+        end
         
+        val_accuracy = get_accuracy(layers, x_val, y_val)
+        val_loss = get_loss(layers, x_val, y_val_encoded)
+        accuracy = get_accuracy(layers, x_train[:,current_idx], y_train[current_idx])
+        loss = get_loss(layers, x_train[:,current_idx], y_train_encoded[:,current_idx])
+
+        push!(metrics["val_accuracy"], val_accuracy)
+        push!(metrics["val_loss"], val_loss)
+        push!(metrics["accuracy"], accuracy)
+        push!(metrics["loss"], loss)
+        
+        println("--------------- Epoch: " * string(e)*" ---------------") 
+
+        println("Training accuracy: " * string(accuracy) * " | Training`` loss: " * string(loss))
+        println("Validation accuracy: " * string(val_accuracy) * " | Validation loss: " * string(val_loss))
+        end
     end
-    return layers
+    return layers, metrics
 end
 
-function test(layers, x_test, y_test)
+function get_loss(layers, x, y)
+    layers, outputs, ŷ = forward(layers, x)
+    return mean(categorical_cross_entropy(ŷ, y))
+end
+
+function get_accuracy(layers, x_test, y_test)
     y_test = one_hot_encoding(maximum(y_test)+1, y_test)
     accuracy = 0
+    layers, outputs, curr = forward(layers, x_test)
     for i in 1:size(x_test)[2]
-        layers, outputs, curr = forward(layers, x_test[:,i])
-        accuracy = accuracy + 1*(argmax(curr)[1]  == argmax(y_test[:,i]))
+        # layers, outputs, curr = forward(layers, x_test[:,i])
+        accuracy = accuracy + 1*(argmax(curr[:,i])[1]  == argmax(y_test[:,i]))
         # println("Prediction: " * string(argmax(curr)[1]-1) * " Current: " * string(argmax(y_test[:,i])[1]-1))
     end
     return accuracy./size(y_test)[2]
