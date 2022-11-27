@@ -23,12 +23,13 @@ function Dense(name ,number_of_features::Int, layer_size::Int, activation::Funct
 end
 
 function (layer::Dense)(input)
-    result = transpose(layer.weights) * input .+ layer.bias
+    result = matmul(layer.weights', Float64.(input))
+    result = result .+ layer.bias
     layer.linear_output = copy(result)
     layer.activation(result)
     return result
 end
 
-layer1 = Dense("l1", 32*32, 512, ReLU!)
-layer2 = Dense("l2",512, 256, ReLU!)
-layer3 = Dense("l3",256, 10, softmax!)
+layer1 = Dense("l1", 28*28, 256, ReLU!)
+layer2 = Dense("l2",256, 128, ReLU!)
+layer3 = Dense("l3",128, 10, softmax!)
