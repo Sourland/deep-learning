@@ -28,5 +28,5 @@ ROC = roc(y_test, predict(ŷ).-1)
 model_recall = recall(ROC);
 model_precision = precision(ROC)
 model_f1_score = f1score(ROC)
-
-print("RECALL: " * string(model_recall) * " | PRECISION: " * string(model_recall) * " | F1: " * string(model_f1_score))
+model_accuracy = get_accuracy(net_layers, x_test, y_test)
+print("ACCURACY "* string(model_accuracy) * " | RECALL: " * string(model_recall) * " | PRECISION: " * string(model_recall) * " | F1: " * string(model_f1_score))

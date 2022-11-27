@@ -110,7 +110,7 @@ function train(layers, x_train, y_train, epochs, batch_size, learning_rate)
         
         println("--------------- Epoch: " * string(e)*" ---------------") 
 
-        println("Training accuracy: " * string(accuracy) * " | Training`` loss: " * string(loss))
+        println("Training accuracy: " * string(accuracy) * " | Training loss: " * string(loss))
         println("Validation accuracy: " * string(val_accuracy) * " | Validation loss: " * string(val_loss))
         end
     end
