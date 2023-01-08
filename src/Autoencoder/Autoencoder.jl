@@ -3,6 +3,9 @@ using Images
 using Flux.Data, MLDatasets
 using Flux.Data:DataLoader
 using Noise
+
+include("train.jl")
+
 device = cpu # where will the calculations be performed?
 
 x_train, y_train = MNIST.traindata(Float32);
@@ -11,13 +14,10 @@ x_test, y_test = MNIST.testdata(Float32);
 m, n = size(x_test[:,:,1])
 
 x_train = reshape(x_train, (m*n,size(x_train)[3]))
-# add some salt pepper noise to the image
-x_train_noise = add_gauss(x_train, 0.05) 
 x_test = reshape(x_test, (m*n,size(x_test)[3]))
 
 loader = DataLoader((data = x_train, label = x_train), batchsize=512, shuffle=true)
 
-f
 
 autoencoder1 = Chain(
     #ENCODER
@@ -65,6 +65,6 @@ params1 = Flux.params(autoencoder1)
 params2 = Flux.params(autoencoder2)
 params3 = Flux.params(autoencoder3) # parameters
 
-train!(loss, params1, opt, loader, 10)
-train!(loss, params2, opt, loader, 35)
-train!(loss, params3, opt, loader, 35)
+# train!(loss,1 params1, opt, loader, 10)
+# train!(loss2, params2, opt, loader, 35)
+train!(loss3, params3, opt, loader, 35)

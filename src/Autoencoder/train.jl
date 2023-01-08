@@ -19,9 +19,3 @@ function train!(model_loss, model_params, opt, loader, epochs = 10)
     end
     "Total train steps: $train_steps" |> println
 end
-
-function fit(model, data, optimizer, loss_func)
-Loss(x,y) = loss_func(x,y)
-model_params = Flux.params(model)
-
-end
